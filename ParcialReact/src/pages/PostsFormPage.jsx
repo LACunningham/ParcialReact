@@ -1,75 +1,97 @@
-import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { createPost } from '../services/posts.service';
+// Página del formulario, maneja tanto la creación como la edición de posts, con un modal de confirmación al editar
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { getPostById } from '../services/posts.service';
+import { usePostContext } from '../context/PostContext';
+import PostForm from '../components/PostForm';
+import ConfirmModal from '../components/ConfirmModal';
 
 const PostFormPage = () => {
-  const [title, setTitle] = useState('');
-  const [body, setBody] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
+  const { id } = useParams();
+  // Si viene un :id en la URL estamos editando, si no, estamos creando
+  const isEditing = !!id;
   const navigate = useNavigate();
-  const titleInputRef = useRef(null);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [initialData, setInitialData] = useState(null);
+  const [loadingPost, setLoadingPost] = useState(!!id);
+  // Guardamos los datos del formulario hasta que el usuario confirme la edición
+  const [pendingData, setPendingData] = useState(null);
+
+  const { addPost, editPost } = usePostContext();
+
+  // Cuando estamos editando, cargamos los datos del post existente
   useEffect(() => {
-    if (titleInputRef.current) {
-      titleInputRef.current.focus();
-    }
-  }, []);
+    if (!id) return;
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+    const fetchPost = async () => {
+      try {
+        const data = await getPostById(id);
+        setInitialData(data);
+      } catch {
+        alert('Error al cargar el post');
+        navigate('/');
+      } finally {
+        setLoadingPost(false);
+      }
+    };
+
+    fetchPost();
+  }, [id, navigate]);
+
+  // Interceptamos el submit para mostrar el modal de confirmación si estamos editando
+  const handleSubmit = (formData) => {
+    if (isEditing) {
+      setPendingData(formData);
+    } else {
+      submitForm(formData);
+    }
+  };
+
+  // Envía la request a la API y al contexto
+  const submitForm = async (formData) => {
     setIsSubmitting(true);
 
     try {
-      const newPost = await createPost({ title, body, userId: 1 });
-      console.log('Post creado:', newPost);
+      if (isEditing) {
+        await editPost(id, formData);
+      } else {
+        await addPost(formData);
+      }
       navigate('/');
-    } catch (error) {
-      alert('Hubo un error al crear el post');
+    } catch {
+      alert(isEditing ? 'Error al editar el post' : 'Error al crear el post');
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  if (loadingPost) {
+    return <div className="container">Cargando datos del post...</div>;
+  }
+
   return (
-    <div className="container form-container">
-      <h2>Crear Nuevo Post</h2>
-      <form onSubmit={handleSubmit}>
-        
-        <div className="form-group">
-          <label htmlFor="title">Título:</label>
-          <input 
-            id="title"
-            type="text" 
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            ref={titleInputRef}
-            required
-            placeholder="Escribe el título del post"
-          />
-        </div>
+    <>
+      <PostForm
+        initialData={initialData}
+        onSubmit={handleSubmit}
+        isSubmitting={isSubmitting}
+      />
 
-        <div className="form-group">
-          <label htmlFor="body">Contenido:</label>
-          <textarea 
-            id="body"
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            required
-            rows="5"
-            placeholder="Escribe el contenido..."
-          />
-        </div>
-
-        <button 
-          type="submit" 
-          disabled={isSubmitting} 
-          className="btn btn-primary"
-        >
-          {isSubmitting ? 'Guardando...' : 'Guardar Post'}
-        </button>
-      </form>
-    </div>
+      {/* Modal de confirmación de edición, solo se muestra si hay datos pendientes */}
+      <ConfirmModal
+        isOpen={!!pendingData}
+        title="Confirmar cambios"
+        message="¿Estás seguro de que deseas guardar los cambios en este post?"
+        confirmLabel="Guardar cambios"
+        confirmVariant="primary"
+        onConfirm={() => {
+          submitForm(pendingData);
+          setPendingData(null);
+        }}
+        onCancel={() => setPendingData(null)}
+      />
+    </>
   );
 };
 

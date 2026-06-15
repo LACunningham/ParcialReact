@@ -1,3 +1,4 @@
+// Barra de navegación con links al listado y a la página de creación
 import { Link } from 'react-router-dom';
 
 const Navbar = () => {

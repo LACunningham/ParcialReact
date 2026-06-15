@@ -1,3 +1,4 @@
+// Capa de servicio de la API, envuelve los llamados fetch al endpoint de posts de JSONPlaceholder
 const API_URL = 'https://jsonplaceholder.typicode.com/posts';
 
 export const getPosts = async () => {

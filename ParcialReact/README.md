@@ -1,18 +1,30 @@
-# React + Vite
+# Parcial React Labo
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación CRUD de posts consumiendo la API de [JSONPlaceholder](https://jsonplaceholder.typicode.com). Construida con React + Vite.
 
-Currently, two official plugins are available:
+## Integrantes
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Luciano Cunningham
 
-## React Compiler
+## Instalación y ejecución
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+```sh
+npm install      # Instala dependencias
+npm run dev      # Servidor de desarrollo con HMR
+npm run build    # Build de producción a dist/
+npm run preview  # Preview del build de producción
+npm run lint     # ESLint en todo el proyecto
+```
 
-Note: This will impact Vite dev & build performances.
+## Rutas
 
-## Expanding the ESLint configuration
+| Ruta           | Descripción              |
+| -------------- | ------------------------ |
+| `/`            | Listado de posts         |
+| `/posts/:id`   | Detalle de un post       |
+| `/crear`       | Crear nuevo post         |
+| `/editar/:id`  | Editar post existente    |
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Deploy
+
+El proyecto está configurado para GitHub Pages con base `/ParcialReact/`.
